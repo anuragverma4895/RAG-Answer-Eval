@@ -2,50 +2,15 @@ import React,{useMemo,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Upload,Search,Database,FileText,ChevronRight,CheckCircle2,Circle,BarChart3,Sparkles,Send,RotateCcw} from 'lucide-react';
 import './styles.css';
-
 const docs=[{name:'rag-overview.pdf',chunks:24,size:'1.8 MB',status:'Indexed'},{name:'evaluation-guidelines.pdf',chunks:18,size:'1.1 MB',status:'Indexed'},{name:'product-notes.md',chunks:11,size:'32 KB',status:'Indexed'}];
-const evals=[{q:'What is retrieval augmented generation?',score:0.94,label:'Excellent',reason:'Answer is grounded in the retrieved context and directly addresses the question.'},{q:'Why do we need answer evaluation?',score:0.81,label:'Good',reason:'Core idea is correct; one supporting detail is missing.'},{q:'What causes hallucinations in RAG?',score:0.67,label:'Needs review',reason:'Partially supported by context; answer overstates one claim.'}];
-function App(){
- const [query,setQuery]=useState('How does automated answer evaluation improve a RAG system?');
- const [active,setActive]=useState('Playground');
- const [ran,setRan]=useState(false);
- const [score,setScore]=useState(null);
- const answer=useMemo(()=>ran?'Automated evaluation measures whether generated answers are relevant, correct, and grounded in retrieved context. It helps detect weak retrieval, unsupported claims, and regressions without relying only on manual review.':'Run the pipeline to generate an evaluated answer from the indexed knowledge base.',[ran]);
- return <div className="app">
-  <aside className="sidebar">
-   <div className="brand"><div className="mark">R</div><div><strong>RAG Evaluation</strong><span>Studio</span></div></div>
-   <nav>{['Playground','Knowledge Base','Evaluation Lab','Runs'].map(i=><button key={i} onClick={()=>setActive(i)} className={active===i?'nav active':'nav'}>{i==='Playground'?<Sparkles size={17}/>:i==='Knowledge Base'?<Database size={17}/>:i==='Evaluation Lab'?<BarChart3 size={17}/>:<FileText size={17}/>}<span>{i}</span></button>)}</nav>
-   <div className="side-note"><span className="dot"></span><span>Pipeline status</span><b>Ready</b></div>
-  </aside>
-  <main className="main">
-   <header><div><div className="eyebrow">Retrieval + generation + evaluation</div><h1>{active}</h1><p>Inspect grounded answers, retrieved context, and quality signals in one place.</p></div><button className="ghost"><RotateCcw size={16}/>Reset</button></header>
-   <section className="stats"><div className="stat"><span>Documents</span><strong>03</strong><small>53 indexed chunks</small></div><div className="stat"><span>Avg. score</span><strong>84%</strong><small>Across latest runs</small></div><div className="stat"><span>Groundedness</span><strong>91%</strong><small>Context-supported claims</small></div><div className="stat"><span>Latency</span><strong>1.24s</strong><small>Retrieval + generation</small></div></section>
-   <div className="grid">
-    <section className="panel">
-      <div className="panel-head"><div><h2>Ask the knowledge base</h2><p>Run a retrieval-augmented answer and evaluate it automatically.</p></div><span className="pill">Demo mode</span></div>
-      <label className="label">Question</label><textarea value={query} onChange={e=>setQuery(e.target.value)} />
-      <div className="controls"><div className="select"><Search size={15}/><span>Semantic retrieval · top 4</span><ChevronRight size={15}/></div><button className="primary" onClick={()=>{setRan(true);setScore(92)}}><Send size={16}/>Run pipeline</button></div>
-      <div className="divider"></div>
-      <div className="result-title"><span>Generated answer</span>{ran&&<span className="score"><CheckCircle2 size={15}/>{score}/100</span>}</div>
-      <div className="answer">{answer}</div>
-      <div className="context"><div className="result-title"><span>Retrieved context</span><span className="muted">4 chunks</span></div>{docs.slice(0,2).map((d,i)=><div className="chunk" key={d.name}><div className="chunk-top"><b>{d.name}</b><span>0.{92-i*7} relevance</span></div><p>{i?'Evaluation quality can be tracked through relevance, correctness, faithfulness, and groundedness signals.':'RAG combines retrieval of relevant source passages with generation so the model can answer using external knowledge instead of relying only on parameters.'}</p></div>)}</div>
-    </section>
-    <section className="panel">
-      <div className="panel-head"><div><h2>Evaluation snapshot</h2><p>Human-readable signals for every generated answer.</p></div></div>
-      <div className="ring"><div><strong>92</strong><span>/ 100</span></div></div>
-      <div className="bars">{[['Answer relevance',92],['Context precision',89],['Faithfulness',95],['Completeness',83]].map(([n,v])=><div className="bar" key={n}><div><span>{n}</span><b>{v}%</b></div><div className="track"><i style={{width:v+'%'}}></i></div></div>)}</div>
-      <div className="verdict"><CheckCircle2 size={18}/><div><b>Strong grounded answer</b><span>Most claims are directly supported by retrieved chunks.</span></div></div>
-    </section>
-   </div>
-   <section className="panel lower">
-     <div className="panel-head"><div><h2>Knowledge base</h2><p>Indexed sources available to the retrieval layer.</p></div><button className="secondary"><Upload size={16}/>Upload document</button></div>
-     <div className="table">{docs.map(d=><div className="row" key={d.name}><div className="file"><div className="file-icon"><FileText size={17}/></div><span>{d.name}</span></div><span>{d.chunks} chunks</span><span>{d.size}</span><span className="indexed"><Circle size={10} fill="currentColor"/>{d.status}</span></div>)}</div>
-   </section>
-   <section className="panel lower">
-     <div className="panel-head"><div><h2>Recent evaluations</h2><p>Quick view of benchmark-style answer checks.</p></div></div>
-     <div className="evals">{evals.map(e=><div className="eval" key={e.q}><div className="q">{e.q}</div><div className="eval-meta"><strong>{Math.round(e.score*100)}/100</strong><span className={e.score>0.9?'excellent':e.score>0.75?'good':'review'}>{e.label}</span><p>{e.reason}</p></div></div>)}</div>
-   </section>
-  </main>
- </div>
-}
+const evals=[{q:'What is retrieval augmented generation?',score:.94,label:'Excellent',reason:'Answer is grounded in retrieved context and directly addresses the question.'},{q:'Why do we need answer evaluation?',score:.81,label:'Good',reason:'Core idea is correct; one supporting detail is missing.'},{q:'What causes hallucinations in RAG?',score:.67,label:'Needs review',reason:'Partially supported by context; the answer overstates one claim.'}];
+function App(){const [query,setQuery]=useState('How does automated answer evaluation improve a RAG system?');const [active,setActive]=useState('Playground');const [ran,setRan]=useState(false);const [score,setScore]=useState(null);
+const answer=useMemo(()=>ran?'Automated evaluation measures whether generated answers are relevant, correct, and grounded in retrieved context. It helps detect weak retrieval, unsupported claims, and regressions without relying only on manual review.':'Run the pipeline to generate an evaluated answer from the indexed knowledge base.',[ran]);
+const run=()=>{if(query.trim()){setRan(true);setScore(92)}};return <div className="app"><aside className="sidebar"><div className="brand"><div className="mark">R</div><div><strong>RAG Evaluation</strong><span>Studio</span></div></div><nav>{['Playground','Knowledge Base','Evaluation Lab','Runs'].map(i=><button key={i} onClick={()=>setActive(i)} className={active===i?'nav active':'nav'}>{i==='Playground'?<Sparkles size={17}/>:i==='Knowledge Base'?<Database size={17}/>:i==='Evaluation Lab'?<BarChart3 size={17}/>:<FileText size={17}/>}<span>{i}</span></button>)}</nav><div className="side-note"><span className="dot"></span><span>Pipeline status</span><b>Ready</b></div></aside>
+<main className="main"><header><div><div className="eyebrow">Retrieval + generation + evaluation</div><h1>{active}</h1><p>Inspect grounded answers, retrieved context, and quality signals in one place.</p></div><button className="ghost" onClick={()=>{setRan(false);setScore(null)}}><RotateCcw size={16}/>Reset</button></header>
+<section className="stats"><div className="stat"><span>Documents</span><strong>03</strong><small>53 indexed chunks</small></div><div className="stat"><span>Avg. score</span><strong>84%</strong><small>Across latest runs</small></div><div className="stat"><span>Groundedness</span><strong>91%</strong><small>Context-supported claims</small></div><div className="stat"><span>Latency</span><strong>1.24s</strong><small>Retrieval + generation</small></div></section>
+<div className="grid"><section className="panel"><div className="panel-head"><div><h2>Ask the knowledge base</h2><p>Run a retrieval-augmented answer and evaluate it automatically.</p></div><span className="pill">Demo mode</span></div><label className="label">Question</label><textarea value={query} onChange={e=>setQuery(e.target.value)}/><div className="controls"><div className="select"><Search size={15}/><span>Semantic retrieval · top 4</span><ChevronRight size={15}/></div><button className="primary" onClick={run}><Send size={16}/>Run pipeline</button></div><div className="divider"></div><div className="result-title"><span>Generated answer</span>{ran&&<span className="score"><CheckCircle2 size={15}/>{score}/100</span>}</div><div className="answer">{answer}</div><div className="context"><div className="result-title"><span>Retrieved context</span><span className="muted">4 chunks</span></div>{docs.slice(0,2).map((d,i)=><div className="chunk" key={d.name}><div className="chunk-top"><b>{d.name}</b><span>0.{92-i*7} relevance</span></div><p>{i?'Evaluation quality can be tracked through relevance, correctness, faithfulness, and groundedness signals.':'RAG combines retrieval of relevant source passages with generation so the model can answer using external knowledge instead of relying only on parameters.'}</p></div>)}</div></section>
+<section className="panel"><div className="panel-head"><div><h2>Evaluation snapshot</h2><p>Human-readable signals for every generated answer.</p></div></div><div className="ring"><div><strong>{ran?score:'92'}</strong><span>/ 100</span></div></div><div className="bars">{[['Answer relevance',92],['Context precision',89],['Faithfulness',95],['Completeness',83]].map(([n,v])=><div className="bar" key={n}><div><span>{n}</span><b>{v}%</b></div><div className="track"><i style={{width:v+'%'}}></i></div></div>)}</div><div className="verdict"><CheckCircle2 size={18}/><div><b>Strong grounded answer</b><span>Most claims are directly supported by retrieved chunks.</span></div></div></section></div>
+<section className="panel lower"><div className="panel-head"><div><h2>Knowledge base</h2><p>Indexed sources available to the retrieval layer.</p></div><button className="secondary" onClick={()=>alert('Connect your backend upload endpoint here.')}><Upload size={16}/>Upload document</button></div><div className="table">{docs.map(d=><div className="row" key={d.name}><div className="file"><div className="file-icon"><FileText size={17}/></div><span>{d.name}</span></div><span>{d.chunks} chunks</span><span>{d.size}</span><span className="indexed"><Circle size={10} fill="currentColor"/>{d.status}</span></div>)}</div></section>
+<section className="panel lower"><div className="panel-head"><div><h2>Recent evaluations</h2><p>Quick view of benchmark-style answer checks.</p></div></div><div className="evals">{evals.map(e=><div className="eval" key={e.q}><div className="q">{e.q}</div><div className="eval-meta"><strong>{Math.round(e.score*100)}/100</strong><span className={e.score>.9?'excellent':e.score>.75?'good':'review'}>{e.label}</span><p>{e.reason}</p></div></div>)}</div></section></main></div>}
 createRoot(document.getElementById('root')).render(<App/>);
