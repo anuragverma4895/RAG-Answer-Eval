@@ -71,18 +71,19 @@ All scores are generated at runtime by the evaluator; the dashboard does not use
 
 ### 1. Backend setup
 
-Open Terminal 1:
+The backend is a Python/FastAPI application, but it exposes a simple `npm run dev` command for a consistent developer workflow.
 
-```bash
+From the repository root, create the virtual environment once:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Then open Terminal 1:
+
+```powershell
 cd backend
-
-# Create/activate the virtual environment from the repository root if needed
-# Windows PowerShell:
-..\.venv\Scripts\Activate.ps1
-
-# macOS/Linux:
-source ../.venv/bin/activate
-
 pip install -r requirements.txt
 npm run dev
 ```
@@ -98,7 +99,7 @@ The `backend/package.json` only provides the `npm run dev` shortcut; the backend
 
 Open Terminal 2:
 
-```bash
+```powershell
 cd frontend
 npm install
 npm run dev
@@ -121,21 +122,37 @@ The first backend startup downloads the Sentence-Transformers embedding model.
 
 ## Standard development workflow
 
-After the initial setup, always use two terminals:
+After the initial setup, always use two terminals.
 
 **Terminal 1 — Backend**
-```bash
+```powershell
 cd backend
 npm run dev
 ```
 
 **Terminal 2 — Frontend**
-```bash
+```powershell
 cd frontend
 npm run dev
 ```
 
-This keeps the frontend and backend completely separated and follows the standard project structure.
+The backend's `npm run dev` is only a shortcut for starting Uvicorn; the backend remains Python/FastAPI.
+
+### Environment file locations
+
+There is intentionally **one backend environment file**:
+
+```text
+RAG-Answer-Eval/
+├── .env                 # real backend secrets/config; never commit
+├── .env.example         # backend config template
+├── frontend/
+│   └── .env.example     # frontend Vite config template
+└── backend/
+    └── data/            # runtime ChromaDB + SQLite; generated locally
+```
+
+Do not create another `backend/.env`. The backend loads the root `.env`. The frontend only needs a local `frontend/.env.local` if you want to override `VITE_API_URL`.
 
 ## How the RAG pipeline works
 
@@ -199,9 +216,20 @@ RAG-Answer-Eval/
 │   ├── tests/
 │   ├── package.json
 │   └── requirements.txt
+├── .env
 ├── .env.example
 ├── .gitignore
-├── package.json
+├── frontend/
+│   ├── .env.example
+│   ├── src/
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── backend/
+│   ├── app/
+│   ├── tests/
+│   ├── package.json
+│   └── requirements.txt
 └── README.md
 ```
 
