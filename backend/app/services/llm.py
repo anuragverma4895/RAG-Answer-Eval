@@ -68,7 +68,8 @@ RETRIEVED CONTEXT:
         )
     )
     raw=(response.text or "").strip()
-    raw=raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()\n    data=json.loads(raw)
+    raw=raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    data=json.loads(raw)
     fields=["answer_relevance","faithfulness","context_precision","completeness","overall_score"]
     for field in fields:
         data[field]=max(0,min(100,int(data.get(field,0))))
