@@ -47,12 +47,12 @@ flowchart LR
 
 ## Tech stack
 
-Frontend: React, Vite, Lucide React
-Backend: Python, FastAPI
-LLM: Google Gemini API
-Embeddings: Sentence-Transformers (all-MiniLM-L6-v2)
-Vector database: ChromaDB
-Metadata/history: SQLite
+Frontend: React, Vite, Lucide React  
+Backend: Python, FastAPI  
+LLM: Google Gemini API  
+Embeddings: Sentence-Transformers (all-MiniLM-L6-v2)  
+Vector database: ChromaDB  
+Metadata/history: SQLite  
 Documents: pypdf
 
 ## Evaluation metrics
@@ -69,50 +69,73 @@ All scores are generated at runtime by the evaluator; the dashboard does not use
 
 ## Local setup
 
-### Frontend
+### 1. Backend setup
+
+Open Terminal 1:
+
+```bash
+cd backend
+
+# Create/activate the virtual environment from the repository root if needed
+# Windows PowerShell:
+..\.venv\Scripts\Activate.ps1
+
+# macOS/Linux:
+source ../.venv/bin/activate
+
+pip install -r requirements.txt
+npm run dev
+```
+
+The backend starts at:
+
+- API: http://localhost:8000
+- Health: http://localhost:8000/api/health
+
+The `backend/package.json` only provides the `npm run dev` shortcut; the backend itself is Python/FastAPI.
+
+### 2. Frontend setup
+
+Open Terminal 2:
 
 ```bash
 cd frontend
 npm install
-cd ..
+npm run dev
 ```
 
-### Backend
+The frontend starts at:
 
-From the repository root:
+- http://localhost:5173
 
-```bash
-python -m venv .venv
+### 3. Environment
 
-# Windows
-.venv\\Scripts\\activate
-
-# macOS/Linux
-source .venv/bin/activate
-
-pip install -r backend/requirements.txt
-```
-
-Create a root .env from .env.example and add your Gemini API key:
+Create the root `.env` from `.env.example` and add your Gemini API key:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-2.5-flash
 ```
 
-Start the API:
+The first backend startup downloads the Sentence-Transformers embedding model.
 
+## Standard development workflow
+
+After the initial setup, always use two terminals:
+
+**Terminal 1 — Backend**
 ```bash
-uvicorn app.main:app --reload --app-dir backend
+cd backend
+npm run dev
 ```
 
-Run frontend and backend in separate terminals.
+**Terminal 2 — Frontend**
+```bash
+cd frontend
+npm run dev
+```
 
-Frontend: http://localhost:5173
-Backend: http://localhost:8000
-Health check: http://localhost:8000/api/health
-
-The first startup downloads the Sentence-Transformers embedding model.
+This keeps the frontend and backend completely separated and follows the standard project structure.
 
 ## How the RAG pipeline works
 
@@ -140,7 +163,7 @@ The first startup downloads the Sentence-Transformers embedding model.
 
 ## Environment variables
 
-See .env.example.
+See `.env.example`.
 
 Important variables:
 
@@ -156,7 +179,7 @@ Important variables:
 - MAX_UPLOAD_MB
 - VITE_API_URL
 
-Never commit .env, backend/data, uploaded files or virtual environments.
+Never commit `.env`, `backend/data`, uploaded files or virtual environments.
 
 ## Project structure
 
@@ -174,6 +197,7 @@ RAG-Answer-Eval/
 │   │   ├── routes/
 │   │   └── services/
 │   ├── tests/
+│   ├── package.json
 │   └── requirements.txt
 ├── .env.example
 ├── .gitignore
@@ -181,7 +205,7 @@ RAG-Answer-Eval/
 └── README.md
 ```
 
-The root `package.json` provides convenience commands, while application code is separated into `frontend/` and `backend/`.
+The root `package.json` is optional convenience tooling. Normal development uses the separate `frontend` and `backend` directories.
 
 ## Testing
 
@@ -192,10 +216,6 @@ pytest backend/tests
 ```
 
 The tests cover chunking and API health. The live RAG path additionally requires a Gemini API key and local embedding/vector dependencies.
-
-## Screenshots
-
-Add screenshots here after running the project with a real document.
 
 ## Interview-ready explanation
 
