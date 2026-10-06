@@ -72,8 +72,9 @@ All scores are generated at runtime by the evaluator; the dashboard does not use
 ### Frontend
 
 ```bash
+cd frontend
 npm install
-npm run dev
+cd ..
 ```
 
 ### Backend
@@ -161,7 +162,13 @@ Never commit .env, backend/data, uploaded files or virtual environments.
 
 ```text
 RAG-Answer-Eval/
-├── src/
+├── frontend/
+│   ├── src/
+│   │   ├── main.jsx
+│   │   └── styles.css
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
 ├── backend/
 │   ├── app/
 │   │   ├── routes/
@@ -173,6 +180,8 @@ RAG-Answer-Eval/
 ├── package.json
 └── README.md
 ```
+
+The root `package.json` provides convenience commands, while application code is separated into `frontend/` and `backend/`.
 
 ## Testing
 
