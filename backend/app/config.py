@@ -25,7 +25,6 @@ def _configured_path(name: str, default: Path) -> str:
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2").strip()
 VECTOR_DB_PATH = _configured_path("VECTOR_DB_PATH", ROOT / "backend" / "data" / "chroma")
 SQLITE_PATH = _configured_path("SQLITE_PATH", ROOT / "backend" / "data" / "rag_eval.db")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
