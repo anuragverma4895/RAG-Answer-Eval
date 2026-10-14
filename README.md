@@ -35,9 +35,6 @@ The evaluation scores are LLM-generated quality signals, not guaranteed ground t
 ```text
 RAG-Answer-Eval/
 ├── .env.example                 # Root-level backend environment template
-├── .github/
-│   └── workflows/
-│       └── ci.yml             # Frontend build and backend test checks
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
