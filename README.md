@@ -62,7 +62,8 @@ RAG-Answer-Eval/
 │   │   ├── test_documents.py
 │   │   └── test_health.py
 │   ├── data/                    # Created at runtime; ignored by Git
-│   └── requirements.txt
+│   ├── requirements.txt         # Runtime dependencies
+│   └── requirements-dev.txt     # Runtime plus pytest/httpx for tests
 ├── frontend/
 │   ├── src/
 │   │   ├── main.jsx             # UI and API interactions
@@ -99,7 +100,7 @@ Run the commands from the repository root unless a command explicitly changes di
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
 Copy-Item backend\.env.example backend\.env
 ```
 
@@ -108,7 +109,7 @@ Copy-Item backend\.env.example backend\.env
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r backend/requirements.txt
+.venv/bin/python -m pip install -r backend/requirements-dev.txt
 cp backend/.env.example backend/.env
 ```
 
