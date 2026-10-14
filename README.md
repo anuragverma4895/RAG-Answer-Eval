@@ -42,13 +42,13 @@ RAG-Answer-Eval/
 │   ├── app/
 │   │   ├── __init__.py
 │   │   ├── routes/
-│   │   │   └── __init__.py
+│   │   │   ├── __init__.py
 │   │   │   ├── documents.py     # Upload, list, and delete documents
 │   │   │   ├── evaluations.py   # Evaluation history and details
 │   │   │   ├── rag.py           # Retrieval, answer generation, evaluation
 │   │   │   └── stats.py         # Dashboard statistics
 │   │   ├── services/
-│   │   │   └── __init__.py
+│   │   │   ├── __init__.py
 │   │   │   ├── chunking.py      # Text cleanup and overlapping chunks
 │   │   │   ├── embeddings.py    # Sentence Transformer model and encoding
 │   │   │   ├── llm.py           # Gemini answer and evaluation calls
