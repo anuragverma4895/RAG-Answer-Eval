@@ -17,10 +17,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 COPY backend/requirements.txt ./requirements.txt
-RUN python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+# Install the CPU wheel explicitly: Render instances do not have an NVIDIA GPU.
+# This avoids pulling the large CUDA/NVIDIA dependency stack into the runtime image.
+RUN python -m pip install --upgrade pip \
+    && python -m pip install --index-url https://download.pytorch.org/whl/cpu torch \
+    && python -m pip install -r requirements.txt
 
 COPY backend/app ./app
 COPY --from=frontend-build /workspace/frontend/dist ./static
 
 EXPOSE 10000
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000} --log-level info"]
