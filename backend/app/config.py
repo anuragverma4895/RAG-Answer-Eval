@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 ROOT = BACKEND_DIR.parent
+
+# In the Docker image, backend/app is copied to /app/app and requirements.txt
+# is copied to /app/requirements.txt. Use /app as the root in that layout.
+if not (ROOT / "backend").is_dir() and (BACKEND_DIR / "requirements.txt").is_file():
+    ROOT = BACKEND_DIR
+
 load_dotenv(BACKEND_DIR / ".env")
 
 
