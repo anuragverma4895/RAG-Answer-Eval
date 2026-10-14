@@ -1,212 +1,241 @@
 # RAG Answer Eval
 
-A full-stack Retrieval-Augmented Generation (RAG) application that answers questions from uploaded documents and evaluates answer quality using a separate LLM evaluation step. Results and source metadata are stored locally.
+A full-stack Retrieval-Augmented Generation (RAG) application that answers questions from uploaded documents and evaluates each generated answer with a separate LLM-based evaluation step.
 
-## What it does
+## Features
 
-1. Upload PDF, TXT, or Markdown documents.
-2. Extract text and split it into overlapping chunks.
-3. Generate normalized embeddings with Sentence Transformers.
-4. Store chunks in ChromaDB and retrieve relevant passages by cosine similarity.
-5. Ask Gemini to answer using retrieved source context only.
-6. Ask Gemini to evaluate relevance, faithfulness, context precision, completeness, and overall quality.
-7. Save evaluation history and metrics in SQLite.
+- Upload PDF, TXT, and Markdown documents.
+- Extract text, split it into overlapping chunks, and create sentence embeddings.
+- Index document chunks in a persistent ChromaDB collection.
+- Retrieve relevant passages using cosine similarity and a configurable threshold.
+- Generate document-grounded answers with the Google Gemini API.
+- Score each answer for relevance, faithfulness, context precision, completeness, and overall quality.
+- View retrieved chunks and their relevance scores alongside an answer.
+- Review quality metrics, recent outcomes, and saved evaluation history.
+- Delete documents and their indexed chunks.
+- View document counts, indexed chunks, average evaluation score, groundedness, and latency.
 
-Scores are model-generated evaluations, not ground-truth guarantees. Review the retrieved context and evaluation reasoning before relying on a score.
+The evaluation scores are LLM-generated quality signals, not guaranteed ground truth. Review the source passages and answer before relying on a score.
 
-## Tech stack
+## Technology stack
 
-- Frontend: React, Vite, Lucide React
-- API: Python, FastAPI, Uvicorn
-- Generation and evaluation: Google Gemini API
-- Embeddings: Sentence Transformers, `all-MiniLM-L6-v2`
-- Vector store: ChromaDB
-- Metadata and history: SQLite
-- PDF extraction: pypdf
+| Layer | Technologies |
+|---|---|
+| Frontend | React, Vite, Lucide React |
+| Backend API | Python, FastAPI, Uvicorn |
+| Answer generation and evaluation | Google Gemini API |
+| Embeddings | Sentence Transformers, `all-MiniLM-L6-v2` |
+| Vector database | ChromaDB |
+| Metadata and evaluation history | SQLite |
+| PDF text extraction | pypdf |
+| Deployment | Docker, Render Blueprint |
 
-## Final project structure
+## Project structure
 
 ```text
 RAG-Answer-Eval/
 ├── backend/
+│   ├── .env.example             # Backend environment template
 │   ├── app/
 │   │   ├── routes/
-│   │   │   ├── documents.py
-│   │   │   ├── evaluations.py
-│   │   │   ├── rag.py
-│   │   │   └── stats.py
+│   │   │   ├── documents.py     # Upload, list, and delete documents
+│   │   │   ├── evaluations.py   # Evaluation history and details
+│   │   │   ├── rag.py           # Retrieval, answer generation, evaluation
+│   │   │   └── stats.py         # Dashboard statistics
 │   │   ├── services/
-│   │   │   ├── chunking.py
-│   │   │   ├── embeddings.py
-│   │   │   ├── llm.py
-│   │   │   ├── storage.py
-│   │   │   └── vector_store.py
-│   │   ├── config.py
-│   │   ├── main.py
-│   │   └── schemas.py
+│   │   │   ├── chunking.py      # Text cleanup and overlapping chunks
+│   │   │   ├── embeddings.py    # Sentence Transformer model and encoding
+│   │   │   ├── llm.py           # Gemini answer and evaluation calls
+│   │   │   ├── storage.py       # SQLite persistence
+│   │   │   └── vector_store.py  # ChromaDB indexing and search
+│   │   ├── config.py            # Environment and runtime configuration
+│   │   ├── main.py              # FastAPI app and route registration
+│   │   └── schemas.py           # Request/response validation
 │   ├── tests/
-│   ├── data/                 # generated at runtime; not committed
-│   ├── dev.mjs               # uses the root .venv to start Uvicorn
-│   ├── package.json          # cd backend && npm run dev
+│   │   ├── test_chunking.py
+│   │   ├── test_documents.py
+│   │   └── test_health.py
+│   ├── data/                    # Created at runtime; ignored by Git
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── main.jsx
+│   │   ├── main.jsx             # UI and API interactions
 │   │   └── styles.css
-│   ├── .env.example
 │   ├── index.html
-│   ├── package.json          # cd frontend && npm run dev
-│   └── vite.config.js
-├── .env                      # local-only; create from .env.example
-├── .env.example
+│   ├── package.json
+│   └── vite.config.js           # Proxies /api to the local backend
+├── .dockerignore
 ├── .gitignore
+├── Dockerfile                   # Builds frontend and runs backend together
+├── render.yaml                  # Render service and persistent disk settings
 └── README.md
 ```
 
-The real root `.env`, Python virtual environment, Node dependencies, and `backend/data/` are local-only and should not be committed. The backend uses one root `.env`; do not create a second `backend/.env`.
+The local backend environment file is `backend/.env`, created from `backend/.env.example`. Runtime databases and indexed vectors are written to `backend/data/` by default. These files are local application data and must not be committed.
 
-## One-time setup (Windows PowerShell)
+## Requirements
 
-Run these commands from the repository root:
+- Python 3.11
+- Node.js 20 or newer (Node.js 22 is suitable)
+- npm
+- A Google Gemini API key for answer generation and evaluation
+
+The first embedding operation downloads the Sentence Transformers model. Allow extra time and network access on the first run.
+
+## Local setup
+
+Run the commands from the repository root unless a command explicitly changes directory.
+
+### 1. Create the Python environment
+
+**Windows PowerShell**
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-Copy-Item .env.example .env
+Copy-Item backend\.env.example backend\.env
 ```
 
-Open the root `.env` and set your own Gemini key:
+**macOS / Linux**
 
-```env
-GEMINI_API_KEY=your_actual_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r backend/requirements.txt
+cp backend/.env.example backend/.env
 ```
 
-Keep your key private. Never commit the real `.env`.
+Edit `backend/.env` and set `GEMINI_API_KEY` to your own key. Do not commit or share that file. The other settings have working defaults.
 
-Install frontend dependencies:
+### 2. Install frontend dependencies
 
-```powershell
+```bash
 cd frontend
 npm install
 cd ..
 ```
 
+No frontend `.env` file is needed. In development, Vite proxies `/api` requests to FastAPI on port 8000. In the production Docker image, FastAPI serves the built frontend and API from the same origin.
+
 ## Run locally
 
-Use two VS Code terminals from the project folder.
+Start each process in a separate terminal.
 
 **Terminal 1 — Backend**
 
+Windows PowerShell:
+
 ```powershell
-cd backend
-npm run dev
+Set-Location backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-The backend launcher uses the project's root `.venv` automatically.
+macOS / Linux:
 
-- API: http://localhost:8000
-- Health check: http://localhost:8000/api/health
-- Interactive API docs: http://localhost:8000/docs
+```bash
+cd backend
+../.venv/bin/python -m uvicorn app.main:app --reload
+```
+
+The API is available at:
+
+- App health: http://localhost:8000/api/health
+- API documentation: http://localhost:8000/docs
 
 **Terminal 2 — Frontend**
 
-```powershell
+```bash
 cd frontend
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal, normally http://localhost:5173.
+Open the local URL printed by Vite, normally http://localhost:5173. Keep the backend terminal running while using the frontend.
 
-## Environment variables
+## Backend environment variables
 
-Root `.env.example` (backend):
+Configure local variables in `backend/.env`. Render variables are configured in the service environment and do not require an uploaded `.env` file.
 
-| Variable | Purpose |
-|---|---|
-| `GEMINI_API_KEY` | Gemini API key; required for generation and evaluation |
-| `GEMINI_MODEL` | Gemini model name |
-| `EMBEDDING_MODEL` | Sentence Transformers model |
-| `VECTOR_DB_PATH` | ChromaDB directory; default is `backend/data/chroma` |
-| `SQLITE_PATH` | SQLite history database; default is `backend/data/rag_eval.db` |
-| `CHUNK_SIZE` | Maximum chunk length in characters |
-| `CHUNK_OVERLAP` | Overlap between adjacent chunks |
-| `TOP_K` | Default maximum retrieval count |
-| `SIMILARITY_THRESHOLD` | Minimum cosine similarity converted to a 0–1 score |
-| `MAX_UPLOAD_MB` | Maximum upload size in MiB |
+| Variable | Purpose | Default |
+|---|---|---|
+| `GEMINI_API_KEY` | Required Gemini API key | — |
+| `GEMINI_MODEL` | Gemini model used for generation and evaluation | `gemini-2.5-flash` |
+| `EMBEDDING_MODEL` | Sentence Transformers model | `all-MiniLM-L6-v2` |
+| `VECTOR_DB_PATH` | ChromaDB persistence directory | `./backend/data/chroma` |
+| `SQLITE_PATH` | SQLite database path | `./backend/data/rag_eval.db` |
+| `CHUNK_SIZE` | Maximum target chunk length, in characters | `800` |
+| `CHUNK_OVERLAP` | Overlap between adjacent chunks, in characters | `150` |
+| `TOP_K` | Default number of retrieved chunks | `5` |
+| `SIMILARITY_THRESHOLD` | Minimum cosine similarity accepted for retrieval (0–1) | `0.25` |
+| `MAX_UPLOAD_MB` | Maximum uploaded file size, in MiB | `15` |
 
-Paths are resolved relative to the repository root even when the backend is launched from the `backend/` directory.
+Relative data paths are resolved from the repository root, not from the current terminal directory. On Render, `render.yaml` sets the database, vector store, and model cache under the persistent disk mounted at `/var/data`.
 
-Frontend `frontend/.env.example`:
+## API reference
 
-- `VITE_API_URL`: API base URL; defaults to `http://localhost:8000/api`.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Health check |
+| `GET` | `/api/stats` | Dashboard statistics |
+| `GET` | `/api/documents` | List indexed and failed documents |
+| `POST` | `/api/documents/upload` | Upload and index a PDF, TXT, or Markdown file (multipart field: `file`) |
+| `DELETE` | `/api/documents/{document_id}` | Delete a document and its indexed chunks |
+| `POST` | `/api/rag/query` | Retrieve context, generate an answer, and evaluate it |
+| `GET` | `/api/evaluations` | List recent saved evaluations |
+| `GET` | `/api/evaluations/{evaluation_id}` | Get one saved evaluation |
 
-## API endpoints
+Example request for `POST /api/rag/query`:
 
-- `GET /api/health`
-- `GET /api/stats`
-- `GET /api/documents`
-- `POST /api/documents/upload`
-- `DELETE /api/documents/{document_id}`
-- `POST /api/rag/query`
-- `GET /api/evaluations`
-- `GET /api/evaluations/{evaluation_id}`
-
-## Tests
-
-From the repository root, with the virtual environment's dependencies installed:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest backend\tests
+```json
+{
+  "question": "What does the document say about the refund policy?",
+  "top_k": 5,
+  "similarity_threshold": 0.25
+}
 ```
 
-The tests cover health and chunking edge cases. A live end-to-end RAG query also needs a valid Gemini API key and access to the configured Gemini model. The first embedding operation downloads the selected Sentence Transformers model.
+The API returns the answer, retrieved context chunks, model name, latency, evaluation scores, verdict, reasoning, and potential issues. If no passage meets the similarity threshold, the API returns a not-found response rather than asking Gemini to answer without source context.
 
-## Quality and limitations
+## Run tests
 
-- Only supported PDF, TXT, and Markdown files are accepted.
-- Scanned/image-only PDFs do not contain selectable text and need OCR before upload.
-- Document content is treated as untrusted source data in the generation prompt, but prompt-injection resistance is not guaranteed.
-- LLM evaluation is a useful signal, not a substitute for human review or a benchmark dataset.
-- Local SQLite and ChromaDB data are stored in `backend/data/`; back up that folder if you need to preserve local indexed documents and history.
+Run the tests from the backend directory so the `app` package resolves correctly.
 
+**Windows PowerShell**
 
-## Deploy to Render (single service)
+```powershell
+Set-Location backend
+..\.venv\Scripts\python.exe -m pytest tests
+```
 
-This repository includes a root-level `render.yaml` and a multi-stage `Dockerfile`. Render builds the React frontend and Python/FastAPI backend into **one web service**. The frontend calls `/api` on the same origin, so no separate frontend URL or CORS environment variable is needed.
+**macOS / Linux**
 
-1. Push the latest repository changes to GitHub.
-2. Sign in to Render and choose **New → Blueprint**.
-3. Connect the `anuragverma4895/RAG-Answer-Eval` repository and select the `main` branch.
-4. Review the Blueprint resources and continue.
-5. When prompted, enter your actual `GEMINI_API_KEY` as a secret. Do not put the key in GitHub or in `render.yaml`.
-6. Apply the Blueprint and wait for the Docker build and health check to complete.
-7. Open the web service URL shown by Render. The UI and API are served from that same URL.
+```bash
+cd backend
+../.venv/bin/python -m pytest tests
+```
 
-The Blueprint configures:
-- Docker multi-stage build for Vite + FastAPI.
-- `/api/health` as the deployment health check.
-- A persistent disk mounted at `/var/data` for ChromaDB, SQLite history, and the embedding-model cache.
-- `GEMINI_MODEL`, embedding model and data paths, so the only required secret is `GEMINI_API_KEY`.
+Tests cover text chunking, API health and validation, and document text extraction error cases. A live end-to-end question requires a valid Gemini API key and access to the configured Gemini model.
 
-**Plan and storage note:** The Blueprint requests a Standard web-service instance and a persistent disk because PyTorch/Sentence Transformers and the local vector database need memory and durable storage. These are paid Render resources. Review the cost shown in Render before applying. A free instance with an ephemeral filesystem is not a reliable configuration for this app's local embedding model and persistent user data.
+## Deploy to Render
 
-The first deployment downloads the embedding model and may take longer than later starts. Uploaded documents and evaluation history persist on the attached disk across redeploys, but are local to this single service instance.
+Use the repository's Blueprint configuration so the Docker service, health check, environment variables, and persistent disk are applied together.
 
-## Production smoke test
+1. Push the repository's `main` branch to GitHub.
+2. In Render, choose **New → Blueprint** (not **New Web Service**).
+3. Select `anuragverma4895/RAG-Answer-Eval` and the `main` branch.
+4. Review the resources defined in `render.yaml`.
+5. Enter `GEMINI_API_KEY` when prompted, then apply the Blueprint.
+6. Wait for the image build and the `/api/health` check. Open the service URL once it is live.
 
-After Render reports the service as live:
+The root `Dockerfile` builds the React frontend and serves the compiled files through FastAPI, so the UI and API use the same Render web service and URL. No frontend environment variable or separate static-site service is required.
 
-1. Open `https://YOUR-RENDER-SERVICE.onrender.com/api/health`; expect JSON with `"status": "ok"`.
-2. Open the service root URL; confirm the React dashboard loads.
-3. Go to Knowledge Base and upload a small text document containing a few facts.
-4. Ask a question whose answer appears in that document.
-5. Confirm the answer, retrieved source chunk, evaluation metrics and Runs history appear.
-6. Delete the test document and confirm it disappears from the list.
+**Cost and storage:** The current Blueprint requests a Standard web instance and a 2 GB persistent disk. These are paid Render resources; review the price shown by Render before confirming. The disk stores ChromaDB, SQLite history, and the model cache across redeploys. The first deployment may take longer while the embedding model is downloaded.
 
-If the build fails, inspect the failed deploy's build/runtime logs. A valid Gemini API key and access to the selected Gemini model are required for generation and evaluation.
+After deployment, check `https://YOUR-SERVICE.onrender.com/api/health`, upload a small text file in Knowledge Base, ask a question grounded in that file, verify that the answer and evaluation metrics appear, and delete the test file to confirm deletion works.
 
-## Interview explanation
+## Known limitations
 
-RAG Answer Eval is a document-grounded question-answering application with a separate evaluation layer. It chunks and embeds a user's documents, retrieves semantically relevant passages, sends those passages to Gemini as context, and evaluates the resulting answer for relevance, faithfulness, context precision, and completeness. Each run is persisted so answers and scores can be reviewed instead of relying on a hardcoded demo.
+- Scanned or image-only PDFs do not contain extractable text. OCR is not included.
+- Answer generation and quality scoring depend on Gemini API access, quota, and the selected model.
+- Evaluation scores are LLM judgements and can vary; they are not a substitute for a manually labelled benchmark.
+- Local data lives in `backend/data/`; copy that directory before removing the local environment if you need to preserve it.
