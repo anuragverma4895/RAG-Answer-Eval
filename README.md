@@ -171,6 +171,42 @@ The tests cover health and chunking edge cases. A live end-to-end RAG query also
 - LLM evaluation is a useful signal, not a substitute for human review or a benchmark dataset.
 - Local SQLite and ChromaDB data are stored in `backend/data/`; back up that folder if you need to preserve local indexed documents and history.
 
+
+## Deploy to Render (single service)
+
+This repository includes a root-level `render.yaml` and a multi-stage `Dockerfile`. Render builds the React frontend and Python/FastAPI backend into **one web service**. The frontend calls `/api` on the same origin, so no separate frontend URL or CORS environment variable is needed.
+
+1. Push the latest repository changes to GitHub.
+2. Sign in to Render and choose **New → Blueprint**.
+3. Connect the `anuragverma4895/RAG-Answer-Eval` repository and select the `main` branch.
+4. Review the Blueprint resources and continue.
+5. When prompted, enter your actual `GEMINI_API_KEY` as a secret. Do not put the key in GitHub or in `render.yaml`.
+6. Apply the Blueprint and wait for the Docker build and health check to complete.
+7. Open the web service URL shown by Render. The UI and API are served from that same URL.
+
+The Blueprint configures:
+- Docker multi-stage build for Vite + FastAPI.
+- `/api/health` as the deployment health check.
+- A persistent disk mounted at `/var/data` for ChromaDB, SQLite history, and the embedding-model cache.
+- `GEMINI_MODEL`, embedding model and data paths, so the only required secret is `GEMINI_API_KEY`.
+
+**Plan and storage note:** The Blueprint requests a Standard web-service instance and a persistent disk because PyTorch/Sentence Transformers and the local vector database need memory and durable storage. These are paid Render resources. Review the cost shown in Render before applying. A free instance with an ephemeral filesystem is not a reliable configuration for this app's local embedding model and persistent user data.
+
+The first deployment downloads the embedding model and may take longer than later starts. Uploaded documents and evaluation history persist on the attached disk across redeploys, but are local to this single service instance.
+
+## Production smoke test
+
+After Render reports the service as live:
+
+1. Open `https://YOUR-RENDER-SERVICE.onrender.com/api/health`; expect JSON with `"status": "ok"`.
+2. Open the service root URL; confirm the React dashboard loads.
+3. Go to Knowledge Base and upload a small text document containing a few facts.
+4. Ask a question whose answer appears in that document.
+5. Confirm the answer, retrieved source chunk, evaluation metrics and Runs history appear.
+6. Delete the test document and confirm it disappears from the list.
+
+If the build fails, inspect the failed deploy's build/runtime logs. A valid Gemini API key and access to the selected Gemini model are required for generation and evaluation.
+
 ## Interview explanation
 
 RAG Answer Eval is a document-grounded question-answering application with a separate evaluation layer. It chunks and embeds a user's documents, retrieves semantically relevant passages, sends those passages to Gemini as context, and evaluates the resulting answer for relevance, faithfulness, context precision, and completeness. Each run is persisted so answers and scores can be reviewed instead of relying on a hardcoded demo.
