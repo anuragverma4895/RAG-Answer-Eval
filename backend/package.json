@@ -1,8 +1,0 @@
-{
-  "name": "rag-answer-eval-backend",
-  "private": true,
-  "version": "1.1.0",
-  "scripts": {
-    "dev": "node dev.mjs"
-  }
-}
