@@ -11,16 +11,15 @@ FROM python:3.11-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/var/data/huggingface \
+    HOME=/var/data/home \
     TOKENIZERS_PARALLELISM=false \
     OMP_NUM_THREADS=1
 
 WORKDIR /app
 COPY backend/requirements.txt ./requirements.txt
-# Install the CPU wheel explicitly: Render instances do not have an NVIDIA GPU.
-# This avoids pulling the large CUDA/NVIDIA dependency stack into the runtime image.
+# Chroma's ONNX Runtime embedding function runs on CPU and avoids the
+# large PyTorch/CUDA/NVIDIA stack in a CPU-only Render container.
 RUN python -m pip install --upgrade pip \
-    && python -m pip install --index-url https://download.pytorch.org/whl/cpu torch \
     && python -m pip install -r requirements.txt
 
 COPY backend/app ./app
