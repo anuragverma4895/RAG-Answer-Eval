@@ -1,74 +1,123 @@
 import io
+import logging
 import uuid
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, HTTPException
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pypdf import PdfReader
+
 from app.config import ALLOWED_EXTENSIONS, MAX_UPLOAD_MB
-from app.services.storage import create_document, update_document, list_documents, delete_document
 from app.services.chunking import chunk_text
+from app.services.storage import create_document, delete_document, list_documents, update_document
 from app.services.vector_store import add_chunks, delete_document as delete_vectors
 
-router=APIRouter()
+router = APIRouter()
+logger = logging.getLogger(__name__)
+MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
-def extract_pages(filename, data):
-    ext=Path(filename).suffix.lower()
-    if ext==".pdf":
+
+def extract_pages(filename: str, data: bytes) -> list[tuple[int, str]]:
+    ext = Path(filename).suffix.lower()
+    if ext == ".pdf":
         try:
-            reader=PdfReader(io.BytesIO(data))
-            return [(i+1,(page.extract_text() or "")) for i,page in enumerate(reader.pages)]
-        except Exception as exc:
-            raise HTTPException(400,f"Could not read PDF: {exc}")
+            reader = PdfReader(io.BytesIO(data), strict=False)
+            if reader.is_encrypted:
+                try:
+                    if not reader.decrypt(""):
+                        raise HTTPException(400, "This PDF is password-protected and cannot be indexed.")
+                except HTTPException:
+                    raise
+                except Exception:
+                    raise HTTPException(400, "This PDF is password-protected and cannot be indexed.")
+            return [(i + 1, page.extract_text() or "") for i, page in enumerate(reader.pages)]
+        except HTTPException:
+            raise
+        except Exception:
+            logger.exception("PDF extraction failed")
+            raise HTTPException(400, "Could not read this PDF. Check that it is a valid, readable PDF.")
     try:
-        return [(1,data.decode("utf-8",errors="replace"))]
-    except Exception:
-        raise HTTPException(400,"Could not decode the document as UTF-8 text.")
+        return [(1, data.decode("utf-8-sig"))]
+    except UnicodeDecodeError:
+        raise HTTPException(400, "This text file must use UTF-8 encoding.")
+
 
 @router.post("/upload")
-async def upload_document(file: UploadFile=File(...)):
-    filename=file.filename or "document"
-    ext=Path(filename).suffix.lower()
+async def upload_document(file: UploadFile = File(...)):
+    original_name = Path(file.filename or "document").name
+    ext = Path(original_name).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(400,"Unsupported file type. Use PDF, TXT or Markdown.")
-    data=await file.read()
-    if len(data)>MAX_UPLOAD_MB*1024*1024:
-        raise HTTPException(413,f"File is larger than {MAX_UPLOAD_MB} MB.")
-    doc_id=str(uuid.uuid4())
-    create_document(doc_id,filename,ext.lstrip("."),len(data))
+        await file.close()
+        raise HTTPException(400, "Unsupported file type. Use PDF, TXT or Markdown.")
+    if not original_name.strip() or original_name in {".", ".."}:
+        await file.close()
+        raise HTTPException(400, "The uploaded file must have a valid filename.")
+
     try:
-        pages=extract_pages(filename,data)
-        chunks=[]
-        for page_number,text in pages:
-            pieces=chunk_text(text)
-            for idx,piece in enumerate(pieces):
+        data = await file.read(MAX_UPLOAD_BYTES + 1)
+    finally:
+        await file.close()
+
+    if not data:
+        raise HTTPException(400, "The uploaded file is empty.")
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"File is larger than {MAX_UPLOAD_MB} MB.")
+
+    doc_id = str(uuid.uuid4())
+    create_document(doc_id, original_name, ext.lstrip("."), len(data))
+    try:
+        pages = extract_pages(original_name, data)
+        chunks = []
+        for page_number, page_text in pages:
+            for piece in chunk_text(page_text):
                 chunks.append({
-                    "id":f"{doc_id}:{len(chunks)}",
-                    "document_id":doc_id,
-                    "document_name":filename,
-                    "chunk_index":len(chunks),
-                    "page_number":page_number,
-                    "text":piece
+                    "id": f"{doc_id}:{len(chunks)}",
+                    "document_id": doc_id,
+                    "document_name": original_name,
+                    "chunk_index": len(chunks),
+                    "page_number": page_number,
+                    "text": piece,
                 })
         if not chunks:
-            update_document(doc_id,0,"failed")
-            raise HTTPException(400,"The document contains no extractable text.")
+            raise HTTPException(
+                400,
+                "No selectable text was found. Scanned PDFs need OCR before they can be indexed.",
+            )
+
         add_chunks(chunks)
-        update_document(doc_id,len(chunks),"indexed")
-        return {"message":"Document indexed successfully","document":next(d for d in list_documents() if d["id"]==doc_id)}
+        update_document(doc_id, len(chunks), "indexed")
+        document = next((item for item in list_documents() if item["id"] == doc_id), None)
+        if document is None:
+            raise RuntimeError("Indexed document metadata could not be loaded.")
+        return {"message": "Document indexed successfully", "document": document}
     except HTTPException:
+        try:
+            delete_vectors(doc_id)
+        finally:
+            update_document(doc_id, 0, "failed")
         raise
-    except Exception as exc:
-        update_document(doc_id,0,"failed")
-        raise HTTPException(500,f"Document indexing failed: {exc}")
+    except Exception:
+        logger.exception("Document indexing failed for %s", original_name)
+        try:
+            delete_vectors(doc_id)
+        finally:
+            update_document(doc_id, 0, "failed")
+        raise HTTPException(500, "Document indexing failed. Check the backend logs for details.")
+
 
 @router.get("")
 def documents():
     return list_documents()
 
+
 @router.delete("/{document_id}")
-def remove_document(document_id:str):
-    docs=list_documents()
-    if not any(d["id"]==document_id for d in docs):
-        raise HTTPException(404,"Document not found.")
-    delete_vectors(document_id)
-    delete_document(document_id)
-    return {"message":"Document deleted"}
+def remove_document(document_id: str):
+    docs = list_documents()
+    if not any(item["id"] == document_id for item in docs):
+        raise HTTPException(404, "Document not found.")
+    try:
+        delete_vectors(document_id)
+        delete_document(document_id)
+    except Exception:
+        logger.exception("Could not delete document %s", document_id)
+        raise HTTPException(500, "Could not fully delete this document. Check the backend logs.")
+    return {"message": "Document deleted"}
