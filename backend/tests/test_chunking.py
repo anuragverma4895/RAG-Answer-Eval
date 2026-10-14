@@ -8,7 +8,7 @@ def test_chunking_splits_long_text_and_preserves_content():
     chunks = chunk_text(text, chunk_size=100, overlap=20)
     assert len(chunks) > 1
     assert all(chunk.strip() for chunk in chunks)
-    assert "".join(chunks).replace(" ", "")  # chunks contain real source text
+    assert all(chunk in text for chunk in chunks)
 
 
 def test_empty_text_returns_no_chunks():
