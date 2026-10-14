@@ -11,7 +11,7 @@ ROOT = BACKEND_DIR.parent
 if not (ROOT / "backend").is_dir() and (BACKEND_DIR / "requirements.txt").is_file():
     ROOT = BACKEND_DIR
 
-load_dotenv(BACKEND_DIR / ".env")
+load_dotenv(ROOT / ".env")
 
 
 def _configured_path(name: str, default: Path) -> str:
