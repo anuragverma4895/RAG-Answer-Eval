@@ -17,6 +17,7 @@ uploads/
 
 # Node
 node_modules/
+/package-lock.json
 frontend/dist/
 
 # OS / editor
