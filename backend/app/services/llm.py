@@ -8,7 +8,7 @@ from app.config import GEMINI_API_KEY, GEMINI_MODEL
 
 def client():
     if not GEMINI_API_KEY:
-        raise RuntimeError("GEMINI_API_KEY is not configured. Add it to backend/.env or set it in the deployment environment.")
+        raise RuntimeError("GEMINI_API_KEY is not configured. Add it to the repository-root .env file or set it in the deployment environment.")
     return genai.Client(api_key=GEMINI_API_KEY)
 
 
