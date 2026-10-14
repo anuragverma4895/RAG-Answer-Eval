@@ -10,7 +10,7 @@ Upload your documents → ask questions grounded in real content → get AI-gene
 
 Deployed on Render — [rag-answer-eval.onrender.com](https://rag-answer-eval.onrender.com)
 > [!NOTE]
-> The free-tier instance may take 30–60 seconds to cold-start. Wait for the health check before interacting.
+> The current `render.yaml` requests a paid Standard instance and a 2 GB persistent disk. The first deployment can take longer while Python dependencies are installed; the embedding model is downloaded on the first document upload or query.
 
 ---
 
@@ -369,8 +369,10 @@ Set-Location backend
 
 The project uses a multi-stage Dockerfile:
 
-1. **Stage 1** (`node:22-alpine`): Builds the React/Vite frontend into static files
-2. **Stage 2** (`python:3.11-slim`): Installs Python deps, copies backend + built frontend, runs Uvicorn
+1. **Stage 1** (`node:22-alpine`): Builds the React/Vite frontend into static files.
+2. **Stage 2** (`python:3.11-slim`): Installs backend dependencies, copies the API and built frontend, and starts Uvicorn.
+3. PyTorch is installed from the official CPU-only wheel index because the Render service does not have an NVIDIA GPU; this avoids adding the large CUDA/NVIDIA package stack.
+4. Sentence Transformers is imported only when an upload or query needs embeddings, so API startup and the health check do not wait for PyTorch/model initialization. The embedding model then runs explicitly on CPU.
 
 ```bash
 # Build
