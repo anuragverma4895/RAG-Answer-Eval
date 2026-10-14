@@ -3,8 +3,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(ROOT / ".env")
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+ROOT = BACKEND_DIR.parent
+load_dotenv(BACKEND_DIR / ".env")
 
 
 def _configured_path(name: str, default: Path) -> str:
