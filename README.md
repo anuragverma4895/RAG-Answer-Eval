@@ -34,11 +34,11 @@ The evaluation scores are LLM-generated quality signals, not guaranteed ground t
 
 ```text
 RAG-Answer-Eval/
+├── .env.example                 # Root-level backend environment template
 ├── .github/
 │   └── workflows/
 │       └── ci.yml             # Frontend build and backend test checks
 ├── backend/
-│   ├── .env.example             # Backend environment template
 │   ├── app/
 │   │   ├── __init__.py
 │   │   ├── routes/
@@ -78,7 +78,7 @@ RAG-Answer-Eval/
 └── README.md
 ```
 
-The local backend environment file is `backend/.env`, created from `backend/.env.example`. Runtime databases and indexed vectors are written to `backend/data/` by default. These files are local application data and must not be committed.
+Create the local environment file `.env` in the repository root by copying `.env.example`. Keep the real `.env` private and out of Git. Runtime databases and indexed vectors are written to `backend/data/` by default; these are local application data and must not be committed.
 
 ## Requirements
 
@@ -101,7 +101,7 @@ Run the commands from the repository root unless a command explicitly changes di
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
-Copy-Item backend\.env.example backend\.env
+Copy-Item .env.example .env
 ```
 
 **macOS / Linux**
@@ -110,10 +110,10 @@ Copy-Item backend\.env.example backend\.env
 python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r backend/requirements-dev.txt
-cp backend/.env.example backend/.env
+cp .env.example .env
 ```
 
-Edit `backend/.env` and set `GEMINI_API_KEY` to your own key. Do not commit or share that file. The other settings have working defaults.
+Edit the root `.env` and set `GEMINI_API_KEY` to your own key. Do not commit or share that file. The other settings have working defaults.
 
 ### 2. Install frontend dependencies
 
@@ -161,7 +161,7 @@ Open the local URL printed by Vite, normally http://localhost:5173. Keep the bac
 
 ## Backend environment variables
 
-Configure local variables in `backend/.env`. Render variables are configured in the service environment and do not require an uploaded `.env` file.
+Configure local backend variables in the repository-root `.env`, alongside the `frontend/` and `backend/` directories. Render variables are configured in the service environment and do not require an uploaded `.env` file.
 
 | Variable | Purpose | Default |
 |---|---|---|
