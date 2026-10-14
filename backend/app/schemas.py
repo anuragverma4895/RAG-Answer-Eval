@@ -2,11 +2,13 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.config import SIMILARITY_THRESHOLD, TOP_K
+
 
 class QueryRequest(BaseModel):
     question: str = Field(min_length=2, max_length=2000)
-    top_k: int = Field(default=5, ge=1, le=10)
-    similarity_threshold: float = Field(default=0.25, ge=0, le=1)
+    top_k: int = Field(default=TOP_K, ge=1, le=10)
+    similarity_threshold: float = Field(default=SIMILARITY_THRESHOLD, ge=0, le=1)
 
     @field_validator("question")
     @classmethod
