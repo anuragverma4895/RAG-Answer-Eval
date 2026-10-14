@@ -4,7 +4,6 @@ WORKDIR /workspace/frontend
 COPY frontend/package.json ./
 RUN npm install --no-audit --no-fund
 COPY frontend/ ./
-ENV VITE_API_URL=/api
 RUN npm run build
 
 # One Python web process serves both the API and the compiled frontend.
