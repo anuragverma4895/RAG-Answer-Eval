@@ -1,16 +1,14 @@
 from functools import lru_cache
 
-from app.config import EMBEDDING_MODEL
-
-
 @lru_cache(maxsize=1)
 def model():
-    # Keep PyTorch out of API startup; load it only when a document or query
-    # actually needs an embedding. Production runs CPU-only on Render.
-    from sentence_transformers import SentenceTransformer
+    # Chroma provides an ONNX Runtime CPU implementation of all-MiniLM-L6-v2.
+    # It avoids importing PyTorch/CUDA and keeps the web process lightweight.
+    # Loading is lazy so health checks can pass before the model is downloaded.
+    from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2
 
-    return SentenceTransformer(EMBEDDING_MODEL, device="cpu")
+    return ONNXMiniLM_L6_V2()
 
 
 def encode(texts):
-    return model().encode(texts, normalize_embeddings=True).tolist()
+    return model()(texts)
