@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.config import SIMILARITY_THRESHOLD, TOP_K
+from app.schemas import QueryRequest
 
 client = TestClient(app)
 
@@ -26,3 +28,9 @@ def test_rejects_blank_question_before_retrieval():
         json={"question": "   ", "top_k": 5, "similarity_threshold": 0.25},
     )
     assert response.status_code == 422
+
+def test_query_uses_configured_retrieval_defaults():
+    request = QueryRequest(question="What is the policy?")
+    assert request.top_k == TOP_K
+    assert request.similarity_threshold == SIMILARITY_THRESHOLD
+
