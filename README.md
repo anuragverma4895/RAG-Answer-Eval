@@ -19,7 +19,7 @@ Deployed on Render — [rag-answer-eval.onrender.com](https://rag-answer-eval.on
 | Feature | Description |
 |---|---|
 | 📄 **Document Upload** | Upload PDF, TXT, or Markdown files. Text is extracted, cleaned, and split into overlapping chunks. |
-| 🔍 **Semantic Search** | Chunks are embedded using Sentence Transformers (`all-MiniLM-L6-v2`) and indexed in ChromaDB with cosine similarity. |
+| 🔍 **Semantic Search** | Chunks are embedded with ChromaDB's built-in ONNX Runtime CPU encoder (`all-MiniLM-L6-v2`) and indexed with cosine similarity. |
 | 🤖 **Grounded Answers** | Questions are answered using Google Gemini, strictly grounded in retrieved document context — no hallucination. |
 | 📊 **Auto Evaluation** | Every answer is automatically scored (0–100) on 5 dimensions by a separate LLM evaluation call. |
 | 🗂️ **Knowledge Base** | Manage uploaded documents — view chunk counts, file sizes, indexing status. Delete anytime. |
@@ -39,7 +39,7 @@ graph LR
     subgraph Backend["🐍 FastAPI"]
         API["REST API"]
         Chunker["Text Chunking"]
-        Embedder["Sentence Transformers"]
+        Embedder["MiniLM-L6-v2 ONNX Runtime"]
         VectorDB["ChromaDB"]
         LLM["Google Gemini"]
         Eval["LLM Evaluator"]
@@ -97,7 +97,7 @@ graph LR
 | **Backend API** | Python 3.11, FastAPI, Uvicorn | RESTful API serving documents, queries, evaluations, and stats |
 | **Answer Generation** | Google Gemini API (`gemini-2.5-flash`) | Document-grounded answer generation with injection-resistant prompting |
 | **Answer Evaluation** | Google Gemini API (same model) | Structured JSON evaluation with 5 quality dimensions |
-| **Embeddings** | Sentence Transformers `all-MiniLM-L6-v2` | 384-dimensional dense embeddings, normalized for cosine similarity |
+| **Embeddings** | ChromaDB ONNX Runtime encoder (`all-MiniLM-L6-v2`) | 384-dimensional CPU embeddings with cosine similarity |
 | **Vector Store** | ChromaDB (persistent) | HNSW-indexed vector database with cosine distance metric |
 | **Metadata Store** | SQLite | Document metadata, evaluation history, dashboard statistics |
 | **PDF Extraction** | pypdf | Text extraction from PDF pages (non-OCR) |
@@ -160,7 +160,7 @@ RAG-Answer-Eval/
 | Google Gemini API Key | [Get one here](https://aistudio.google.com/apikey) |
 
 > [!TIP]
-> The first run downloads the Sentence Transformers model (~90 MB). Allow extra time and network access.
+> The first document upload or question downloads ChromaDB's ONNX MiniLM model (~80–90 MB). The model cache is stored under the persistent disk on Render.
 
 ### 1. Clone & Configure
 
@@ -257,7 +257,6 @@ Configure in the repository-root `.env` file. All settings have working defaults
 |---|---|---|
 | `GEMINI_API_KEY` | **Required.** Google Gemini API key | — |
 | `GEMINI_MODEL` | Gemini model for generation and evaluation | `gemini-2.5-flash` |
-| `EMBEDDING_MODEL` | Sentence Transformers model name | `all-MiniLM-L6-v2` |
 | `VECTOR_DB_PATH` | ChromaDB persistence directory | `./backend/data/chroma` |
 | `SQLITE_PATH` | SQLite database file path | `./backend/data/rag_eval.db` |
 | `CHUNK_SIZE` | Max characters per chunk | `800` |
@@ -371,8 +370,8 @@ The project uses a multi-stage Dockerfile:
 
 1. **Stage 1** (`node:22-alpine`): Builds the React/Vite frontend into static files.
 2. **Stage 2** (`python:3.11-slim`): Installs backend dependencies, copies the API and built frontend, and starts Uvicorn.
-3. PyTorch is installed from the official CPU-only wheel index because the Render service does not have an NVIDIA GPU; this avoids adding the large CUDA/NVIDIA package stack.
-4. Sentence Transformers is imported only when an upload or query needs embeddings, so API startup and the health check do not wait for PyTorch/model initialization. The embedding model then runs explicitly on CPU.
+3. Embeddings use ChromaDB's built-in ONNX Runtime CPU implementation of `all-MiniLM-L6-v2`; PyTorch and CUDA/NVIDIA packages are not installed.
+4. The ONNX embedding model is initialized only when an upload or query needs embeddings, so API startup and the health check can complete before model download and initialization.
 
 ```bash
 # Build
@@ -408,6 +407,8 @@ The project includes a `render.yaml` Blueprint for one-click deployment:
 
 > [!WARNING]
 > The Standard plan and persistent disk are **paid** Render resources. Review pricing before confirming.
+>
+> The current `render.yaml` configures `HOME=/var/data/home`, so ChromaDB caches the downloaded ONNX embedding model on the attached persistent disk.
 
 **Post-deployment verification:**
 
@@ -434,7 +435,7 @@ The project includes a `render.yaml` Blueprint for one-click deployment:
 - **Scanned PDFs** with image-only pages do not contain extractable text — OCR is not included
 - **Gemini dependency** — answer generation and scoring require API access, quota, and the selected model being available
 - **LLM evaluation variance** — scores are AI judgements and can vary between runs; they are not a substitute for a manually labelled benchmark
-- **Single embedding model** — currently only supports Sentence Transformers models; no OpenAI or Cohere embeddings
+- **Single embedding model** — uses ChromaDB's ONNX `all-MiniLM-L6-v2` encoder; other embedding providers are not configured
 - **No authentication** — the API is open; add auth middleware for production use with sensitive data
 - **Local data persistence** — data lives in `backend/data/`; back it up before removing the local environment
 
