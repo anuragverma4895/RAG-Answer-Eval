@@ -11,7 +11,6 @@ FROM python:3.11-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    HOME=/var/data/home \
     TOKENIZERS_PARALLELISM=false \
     OMP_NUM_THREADS=1
 
@@ -21,6 +20,9 @@ COPY backend/requirements.txt ./requirements.txt
 # large PyTorch/CUDA/NVIDIA stack in a CPU-only Render container.
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt
+
+# Store Chroma's downloaded ONNX model on Render's persistent disk.
+ENV HOME=/var/data/home
 
 COPY backend/app ./app
 COPY --from=frontend-build /workspace/frontend/dist ./static
