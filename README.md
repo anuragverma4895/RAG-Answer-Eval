@@ -126,7 +126,7 @@ RAG-Answer-Eval/
 │   │   │   └── stats.py          # Dashboard statistics endpoint
 │   │   └── services/
 │   │       ├── chunking.py       # Text cleanup + overlapping chunk splitter
-│   │       ├── embeddings.py     # Sentence Transformer model + encoding
+│   │       ├── embeddings.py     # Lazy Chroma ONNX CPU model + encoding
 │   │       ├── llm.py            # Gemini answer generation + evaluation
 │   │       ├── storage.py        # SQLite persistence (documents + evaluations)
 │   │       └── vector_store.py   # ChromaDB indexing + cosine similarity search
