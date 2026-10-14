@@ -1,8 +1,6 @@
-import os
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.routes.documents import router as documents_router
@@ -12,22 +10,6 @@ from app.routes.stats import router as stats_router
 from app.services.storage import init_db
 
 app = FastAPI(title="RAG Answer Eval API", version="1.1.0")
-
-allowed_origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-configured_origin = os.getenv("FRONTEND_ORIGIN", "").strip().rstrip("/")
-if configured_origin:
-    allowed_origins.append(configured_origin)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
-)
 
 init_db()
 app.include_router(documents_router, prefix="/api/documents", tags=["Documents"])
