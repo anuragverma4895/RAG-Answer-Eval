@@ -7,3 +7,4 @@ chromadb>=0.5,<2.0
 pypdf>=5.0,<7.0
 pydantic>=2.8,<3.0
 onnxruntime>=1.17,<2.0
+tokenizers>=0.15,<1.0
