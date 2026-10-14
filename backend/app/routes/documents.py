@@ -41,9 +41,17 @@ def extract_pages(filename: str, data: bytes) -> list[tuple[int, str]]:
         raise HTTPException(400, "This text file must use UTF-8 encoding.")
 
 
+def _mark_failed(doc_id: str) -> None:
+    try:
+        delete_vectors(doc_id)
+    except Exception:
+        logger.exception("Could not clean partial vectors for failed document %s", doc_id)
+    update_document(doc_id, 0, "failed")
+
+
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
-    original_name = Path(file.filename or "document").name
+    original_name = Path((file.filename or "document").replace("\\", "/")).name
     ext = Path(original_name).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         await file.close()
@@ -90,17 +98,11 @@ async def upload_document(file: UploadFile = File(...)):
             raise RuntimeError("Indexed document metadata could not be loaded.")
         return {"message": "Document indexed successfully", "document": document}
     except HTTPException:
-        try:
-            delete_vectors(doc_id)
-        finally:
-            update_document(doc_id, 0, "failed")
+        _mark_failed(doc_id)
         raise
     except Exception:
         logger.exception("Document indexing failed for %s", original_name)
-        try:
-            delete_vectors(doc_id)
-        finally:
-            update_document(doc_id, 0, "failed")
+        _mark_failed(doc_id)
         raise HTTPException(500, "Document indexing failed. Check the backend logs for details.")
 
 
