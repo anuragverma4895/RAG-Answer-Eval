@@ -2,7 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Upload,Search,Database,FileText,CheckCircle2,BarChart3,Sparkles,Send,RotateCcw,Trash2,Clock3,AlertCircle,Loader2,ChevronRight} from 'lucide-react';
 import './styles.css';
-const API=(import.meta.env.VITE_API_URL||'http://localhost:8000/api').replace(/\/$/,'');
+const API=(import.meta.env.VITE_API_URL||(import.meta.env.PROD?'/api':'http://localhost:8000/api')).replace(/\/$/,'');
 async function api(path,opts={}){const r=await fetch(API+path,opts);let d={};try{d=await r.json()}catch{}if(!r.ok)throw Error(d.detail||'Request failed');return d}
 const label=s=>s>=90?'Excellent':s>=75?'Good':s>=60?'Needs review':'Poor';
 const size=n=>n<1024?n+' B':n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(1)+' MB';
