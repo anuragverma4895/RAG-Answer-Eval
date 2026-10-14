@@ -17,14 +17,12 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
-      - key: EMBEDDING_MODEL
-        value: all-MiniLM-L6-v2
       - key: VECTOR_DB_PATH
         value: /var/data/chroma
       - key: SQLITE_PATH
         value: /var/data/rag_eval.db
-      - key: HF_HOME
-        value: /var/data/huggingface
+      - key: HOME
+        value: /var/data/home
       - key: TOKENIZERS_PARALLELISM
         value: "false"
       - key: OMP_NUM_THREADS
