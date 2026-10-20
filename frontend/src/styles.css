@@ -339,3 +339,181 @@ textarea::placeholder { color: #8a94a3; opacity: 1; }
   .outcome-row { gap: 8px; }
   .outcome-score strong { font-size: 11px; }
 }
+
+
+/* Readability pass: larger type across the entire workspace */
+body { font-size: 15px; }
+.brand-copy strong { font-size: 15px; }
+.brand-copy small { font-size: 12px; }
+.nav-label { font-size: 11px; }
+.nav-item { font-size: 14px; min-height: 46px; }
+.nav-count { font-size: 11px; }
+.backend-status strong { font-size: 12px; }
+.backend-status small, .status-text { font-size: 11px; }
+.sidebar-note { font-size: 12px; }
+.eyebrow, .section-kicker { font-size: 11px; }
+.page-header p { font-size: 14px; }
+.button { font-size: 14px; min-height: 44px; padding: 10px 15px; }
+.stat-card { min-height: 134px; padding: 18px 20px; }
+.stat-label { font-size: 13px; }
+.stat-value { font-size: 29px; }
+.stat-card small { font-size: 12px; }
+.card { padding: 25px; }
+.section-heading h2 { font-size: 20px; }
+.section-heading p { font-size: 14px; line-height: 1.65; }
+.tag { font-size: 11px; }
+.field-label { font-size: 14px; }
+textarea { font-size: 15px; min-height: 135px; }
+.field-meta { font-size: 12px; }
+.setting-control label { font-size: 13px; }
+.setting-control label strong { font-size: 14px; }
+.setting-control select, .filter-label select { font-size: 13px; min-height: 36px; }
+.setting-hint { font-size: 12px; }
+.hint-text { font-size: 12px; }
+.inline-empty { font-size: 13px; }
+.inline-empty button { font-size: 12px; }
+.alert { font-size: 14px; padding: 13px 14px; }
+.result-topline h3 { font-size: 19px; }
+.score-pill { font-size: 12px; }
+.pipeline-steps span { font-size: 11px; padding: 6px 9px; }
+.answer-box { font-size: 15px; line-height: 1.85; padding: 16px; }
+.answer-meta { font-size: 12px; }
+.subheading h3 { font-size: 15px; }
+.subheading > span { font-size: 12px; }
+.source-header strong { font-size: 13px; }
+.source-header > span { font-size: 11px; }
+.source-subheader { font-size: 11px; }
+.source-card p { font-size: 13px; line-height: 1.8; }
+.score-circle span { font-size: 11px; }
+.score-caption strong { font-size: 17px; }
+.score-caption span { font-size: 12px; }
+.metric-row > div:first-child { font-size: 13px; }
+.metric-row strong { font-size: 13px; }
+.reasoning-box strong, .issues-box strong { font-size: 13px; }
+.reasoning-box p, .issues-box ul { font-size: 13px; line-height: 1.75; }
+.evaluation-disclaimer { font-size: 11px; }
+.empty-state > strong { font-size: 14px; }
+.empty-state p { font-size: 13px; }
+.upload-dropzone { min-height: 195px; }
+.upload-dropzone > strong { font-size: 15px; }
+.upload-dropzone p { font-size: 13px; }
+.drop-note { font-size: 12px; }
+.list-toolbar h3 { font-size: 16px; }
+.list-toolbar p { font-size: 12px; }
+.filter-label { font-size: 12px; }
+.document-row { padding: 15px 16px; }
+.document-info strong { font-size: 14px; }
+.document-info small { font-size: 12px; }
+.document-chunks strong { font-size: 17px; }
+.document-chunks small { font-size: 11px; }
+.status-badge { font-size: 11px; padding: 5px 8px; }
+.knowledge-footnote { font-size: 12px; }
+.lab-metric-title { font-size: 12px; min-height: 38px; }
+.lab-metric-value { font-size: 29px; }
+.lab-metric-value small { font-size: 12px; }
+.activity-stat span, .activity-stat small { font-size: 12px; }
+.activity-stat strong { font-size: 27px; }
+.outcome-row strong { font-size: 13px; }
+.outcome-row small { font-size: 11px; }
+.outcome-score strong { font-size: 15px; }
+.outcome-score span { font-size: 11px; }
+.run-summary { padding: 17px; }
+.run-question > strong { font-size: 14px; }
+.run-question > small { font-size: 11px; }
+.run-score strong { font-size: 17px; }
+.run-score small { font-size: 11px; }
+.run-detail h3 { font-size: 15px; }
+.run-detail-answer p { font-size: 14px; line-height: 1.8; }
+.run-detail-metrics small { font-size: 11px; }
+.run-detail-metrics strong { font-size: 17px; }
+.run-detail-footer, .page-footer { font-size: 11px; }
+.muted-text { font-size: 13px; }
+.busy-banner { font-size: 13px; padding: 13px 16px; }
+
+@media (max-width: 1200px) {
+  .section-heading h2 { font-size: 19px; }
+  .stat-label { font-size: 12px; }
+  .stat-card small { font-size: 11px; }
+}
+@media (max-width: 680px) {
+  .brand-copy strong { font-size: 14px; }
+  .brand-copy small { font-size: 11px; }
+  .nav-item { font-size: 12px; min-height: 42px; }
+  .page-header h1 { font-size: 29px; }
+  .page-header p { font-size: 13px; line-height: 1.6; }
+  .page-header .button { min-height: 40px; padding: 8px 11px; font-size: 12px; }
+  .eyebrow, .section-kicker { font-size: 10px; }
+  .stat-card { min-height: 116px; padding: 13px; }
+  .stat-label { font-size: 11px; }
+  .stat-value { font-size: 24px; }
+  .stat-card small { font-size: 10px; line-height: 1.5; }
+  .card { padding: 17px; }
+  .section-heading h2 { font-size: 18px; }
+  .section-heading p { font-size: 12px; }
+  .tag { font-size: 10px; }
+  .button { font-size: 13px; }
+  .field-label { font-size: 13px; }
+  textarea { font-size: 14px; min-height: 125px; }
+  .field-meta { font-size: 11px; }
+  .setting-control label { font-size: 12px; }
+  .setting-control select, .filter-label select { font-size: 12px; }
+  .setting-hint { font-size: 11px; }
+  .hint-text { font-size: 11px; }
+  .inline-empty { font-size: 12px; }
+  .inline-empty button { font-size: 11px; }
+  .alert { font-size: 12px; }
+  .result-topline h3 { font-size: 17px; }
+  .pipeline-steps span { font-size: 10px; }
+  .answer-box { font-size: 14px; padding: 13px; }
+  .answer-meta { font-size: 10px; }
+  .subheading h3 { font-size: 13px; }
+  .source-header strong { font-size: 12px; }
+  .source-header > span { font-size: 10px; }
+  .source-subheader { font-size: 10px; }
+  .source-card p { font-size: 12px; line-height: 1.75; }
+  .score-caption strong { font-size: 15px; }
+  .score-caption span { font-size: 11px; }
+  .metric-row > div:first-child { font-size: 12px; }
+  .metric-row strong { font-size: 12px; }
+  .reasoning-box strong, .issues-box strong { font-size: 12px; }
+  .reasoning-box p, .issues-box ul { font-size: 12px; }
+  .empty-state > strong { font-size: 13px; }
+  .empty-state p { font-size: 12px; }
+  .upload-dropzone > strong { font-size: 14px; }
+  .upload-dropzone p { font-size: 12px; }
+  .drop-note { font-size: 11px; }
+  .list-toolbar h3 { font-size: 14px; }
+  .list-toolbar p { font-size: 11px; }
+  .document-info strong { font-size: 12px; }
+  .document-info small { font-size: 10px; }
+  .status-badge { font-size: 10px; }
+  .knowledge-footnote { font-size: 11px; }
+  .lab-metric-title { font-size: 11px; }
+  .lab-metric-value { font-size: 25px; }
+  .activity-stat span, .activity-stat small { font-size: 11px; }
+  .activity-stat strong { font-size: 24px; }
+  .outcome-row strong { font-size: 12px; }
+  .outcome-row small { font-size: 10px; }
+  .outcome-score strong { font-size: 12px; }
+  .outcome-score span { font-size: 10px; }
+  .run-summary { padding: 12px; }
+  .run-question > strong { font-size: 12px; }
+  .run-question > small { font-size: 10px; }
+  .run-score strong { font-size: 13px; }
+  .run-score small { font-size: 10px; }
+  .run-detail h3 { font-size: 13px; }
+  .run-detail-answer p { font-size: 12px; }
+  .run-detail-metrics small { font-size: 10px; }
+  .run-detail-metrics strong { font-size: 15px; }
+  .run-detail-footer, .page-footer { font-size: 10px; }
+  .muted-text { font-size: 12px; }
+  .busy-banner { font-size: 12px; }
+}
+@media (max-width: 390px) {
+  .page-header h1 { font-size: 27px; }
+  .page-header p { font-size: 12px; }
+  .stat-label { font-size: 10px; }
+  .stat-card small { font-size: 10px; }
+  .section-heading h2 { font-size: 17px; }
+  .card { padding: 14px; }
+}
