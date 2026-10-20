@@ -28,4 +28,4 @@ COPY backend/app ./app
 COPY --from=frontend-build /workspace/frontend/dist ./static
 
 EXPOSE 10000
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000} --log-level info"]
+CMD ["sh", "-c", "mkdir -p \"$HOME\" && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000} --log-level info"]
