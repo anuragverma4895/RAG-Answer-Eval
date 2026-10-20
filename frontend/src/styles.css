@@ -143,7 +143,7 @@ textarea::placeholder { color: #8a94a3; opacity: 1; }
 .source-card p { margin: 9px 0 0; color: #374151; font-size: 11px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
 .evaluation-panel .section-heading { margin-bottom: 16px; }
 .score-summary { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 9px 0 23px; border-bottom: 1px solid #edf0f5; }
-.score-circle { --score: 0; position: relative; width: 119px; height: 119px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(#334155 var(--score), #e9edf3 0); }
+.score-circle { --score: 0; position: relative; width: 119px; height: 119px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(#334155 0 var(--score), #e9edf3 var(--score) 100%); }
 .score-circle::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: #fff; }
 .score-circle > div { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
 .score-circle strong { color: #111827; font: 700 31px/1.15 "Space Grotesk", sans-serif; }
