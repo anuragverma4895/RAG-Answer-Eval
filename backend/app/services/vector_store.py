@@ -36,12 +36,17 @@ def add_chunks(chunks):
 
 def search(query, top_k, threshold):
     collection = _collection()
-    if collection.count() == 0:
+    available = collection.count()
+    if available == 0:
         return []
 
+    # Request no more results than there are indexed vectors. This allows
+    # users to ask for 5 or 10 chunks even when a new knowledge base has only
+    # one or two chunks, without triggering a vector-store query error.
+    result_count = min(max(1, int(top_k)), available)
     result = collection.query(
         query_embeddings=encode([query]),
-        n_results=top_k,
+        n_results=result_count,
         include=["documents", "metadatas", "distances"],
     )
     output = []
