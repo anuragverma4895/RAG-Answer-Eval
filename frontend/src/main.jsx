@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity, AlertCircle, ArrowRight, BarChart3, BookOpen, CheckCircle2,
-  Clock3, Database, FileSearch, FileText, Gauge, Layers3, Loader2,
+  Clock3, Database, FileSearch, FileText, Gauge, Loader2,
   RefreshCw, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles,
   Trash2, Upload, X
 } from "lucide-react";
@@ -82,7 +82,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [apiStatus, setApiStatus] = useState("Checking");
@@ -285,7 +284,7 @@ function App() {
                   </div>
                   <div className="setting-control threshold-control">
                     <label htmlFor="threshold">Minimum relevance <strong>{threshold.toFixed(2)}</strong></label>
-                    <input id="threshold" type="range" min="0" max="0.9" step="0.05" value={threshold} onChange={(event) => setThreshold(Number(event.target.value))} />
+                    <input id="threshold" type="range" min="0" max="1" step="0.05" value={threshold} onChange={(event) => setThreshold(Number(event.target.value))} />
                     <span className="setting-hint">Lower values retrieve more results; higher values are stricter.</span>
                   </div>
                 </div>
