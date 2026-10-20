@@ -17,7 +17,11 @@ logger = logging.getLogger(__name__)
 def query_rag(request: QueryRequest):
     started = time.perf_counter()
     try:
-        retrieved = search(request.question, request.top_k or TOP_K, request.similarity_threshold)
+        retrieved = search(
+            request.question,
+            request.top_k or TOP_K,
+            request.similarity_threshold,
+        )
     except RuntimeError as exc:
         logger.exception("Retrieval could not be completed")
         raise HTTPException(503, str(exc))
@@ -45,20 +49,25 @@ def query_rag(request: QueryRequest):
         raise HTTPException(502, "The AI pipeline failed. Check your Gemini configuration and backend logs.")
 
     latency = round((time.perf_counter() - started) * 1000)
+    # Save source text along with metadata so older pipeline runs can be
+    # inspected from the Runs page without relying on the in-memory response.
+    saved_sources = [
+        {
+            "id": chunk.get("id", ""),
+            "document_name": chunk["document_name"],
+            "document_id": chunk["document_id"],
+            "chunk_index": chunk["chunk_index"],
+            "page_number": chunk["page_number"],
+            "similarity": chunk["similarity"],
+            "text": chunk["text"],
+        }
+        for chunk in retrieved
+    ]
     try:
         eval_id = create_evaluation(
             request.question,
             answer,
-            [
-                {
-                    "document_name": chunk["document_name"],
-                    "document_id": chunk["document_id"],
-                    "chunk_index": chunk["chunk_index"],
-                    "page_number": chunk["page_number"],
-                    "similarity": chunk["similarity"],
-                }
-                for chunk in retrieved
-            ],
+            saved_sources,
             evaluation,
             latency,
             GEMINI_MODEL,
